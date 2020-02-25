@@ -1,0 +1,45 @@
+---
+title: "index"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(dplyr)
+library(stringr)
+library(plotly)
+library(ggplot2)
+```
+
+## Summary
+
+In the year 2018, there were 'r shooting_count' shootings that occured and a total of 'r death_count' lives lost. The most impacted city based on number of fatalities and injuries given a single event was 'r highest_impact_city'. On average, 'r average_killed' were killed per shooting and 'r average_injured' were injured per shooting. 
+
+<!--Referenced https://bookdown.org/yihui/rmarkdown-cookbook/kable.html -->
+## Summary Table
+```
+{r table, echo = FALSE, message = FALSE, warning = FALSE}
+summary_table <- summ_table
+colnames(summary_table) <- c("City name", "Number of shootings", "Total killed", "Total injured")
+kable(summary_table)
+```
+The table shows that the total number of injuries is almost always the same, if not more than the total number of fatalities. The table also shows the extreme city to be Chicago, with 122 shooting related fatalities and 13 shooting related injuries. This is exceptional as the number of fatalities is far more than the number of injuries. Another trend seen is that there is a linear trend between the number of shootings and the sum of the injuries and fatalities.
+
+## Specific shooting incident in 'r shooting_city'
+
+On 'r shooting_date' in 'r shooting_city', 'r r_shooting_state', there was a shooting that resulted in 'r shooting_killed' deaths and 'r shooting_injured' injuries. The [Seattle Times](https://www.seattletimes.com/seattle-news/crime/two-men-killed-in-skyway-shooting-identified/) has reported that two people were killed by multiple gunshot wounds. The shooting was located near the Skyway VFW club and motorcycle club around 4AM. The shooting was said to be instigated by a prior fight, but the parties involved were unknown and whoever instigated the fight is unknown. 
+
+<!--Referencing https://plot.ly/r/choropleth-maps/ to make a map-->
+```{r map and plot, echo = FALSE, message = FALSE, warning = FALSE}
+g <- list(scope = 'usa', projection = list(type = 'albers usa'), showland = TRUE, landcolor = toRGB('gray'), subunitwidth = 1, countrywidth = 1, subunitcolor = toRGB('white'), countrycolor = toRGB('gray'))
+
+plot_geo(shootings, locationmode = 'USA-states') %>%
+  layout(title = 'Map of US Shootings in 2018', geo = g) %>%
+  add_markers(sizes = c(1, 500), x = ~long, y = ~lat, color = ~num_killed, size = ~num_killed, text = ~paste(shootings$state, shootings$num_killed, "total fatalities")) %>%
+  colorbar(title = "Number of people killed")
+
+plot_ly(summ_table, x = ~city, y = ~sum_injured, type = 'bar', name = 'Total killed in 2018') %>%
+  add_trace(y = ~summ_table$sum_injured, name = 'Total injured in 2018') %>%
+  layout(title = "Graph of Deaths and Injuries", barmode = 'stack', xaxis = list(title = 'City'), yaxis = list(title = 'Death / Injuries'))
+```
+The chart shows that Chicago is significantly above the national mean high value of up to 30 fatalities or 70 fatalities and injuries combined. Another insight seen from the chart is that the average number of fatalities is fairly low, but the number of injuries is also almost at a 1:1 ratio with the number of fatalities, and if not, singificantly greater.
